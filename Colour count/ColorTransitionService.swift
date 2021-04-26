@@ -181,63 +181,43 @@ class ColorTransitionService {
             return Color(channel1: varR * 255, channel2: varG * 255, channel3: varB * 255)
         }
     }
+    
     func rgb2hsb(_ rgbColor: Color) -> Color {
         let r = rgbColor.channel1
         let g = rgbColor.channel2
         let b = rgbColor.channel3
         
-        let minVal: Float = min(r, min(g, b))
-        let maxVal: Float = max(r, max(g, b))
+        let minVal: Float = min(min(r, g), (b))
+        let maxVal: Float = max(max(r, g), (b))
         
-        let bri = (maxVal + minVal) / 510
-        var sat: Float
-        var hue: Float
+        let delta = maxVal - minVal
+        let bri = maxVal
         
-        var varR: Float = 0.0
-        var varG: Float = 0.0
-        var varB: Float = 0.0
+        var hue: Float = 0.0
+        var sat: Float = 0.0
         
-        if (maxVal == minVal) {
+        if (maxVal != 0.0) {
+            sat = 255.0 * delta / maxVal
+        } else {
             sat = 0.0
-        } else {
-            var sum = Float(maxVal + minVal)
-            
-            if (sum > 255) {
-                sum = 510 - sum
+        }
+        if (sat != 0) {
+            if (r == maxVal) {
+                hue = (g - b) / delta
+            } else if (g == maxVal) {
+                hue = 2.0 + (b - r) / delta
+            } else if (b == maxVal) {
+                hue = 4.0 + (r - g) / delta
             }
-            sat = (maxVal - minVal) / sum
+        } else {
+            hue = -1.0
+            hue = hue * 60.0
+        }
+        if (hue < 0) {
+            hue = hue + 360.0
         }
         
-        if (maxVal == minVal) {
-            hue = 0.0
-        } else {
-            // TODO: here
-//            var diff: Float = 0.0
-//            diff = (maxVal - minVal)
-            varR = (maxVal - r)
-            varG = (maxVal - g)
-            varB = (maxVal - b)
-            
-            hue = 0.0
-            
-            if (r == maxVal) {
-                hue = 60.0 * (6.0 + varB - varG)
-            }
-            
-            if (g == maxVal) {
-                hue = 60.0 * (2.0 + varR - varB)
-            }
-            
-            if (b == maxVal) {
-                hue = 60.0 * (4.0 + varG - varR)
-            }
-            
-            if (hue > 360.0)
-            {
-                hue = hue - 360.0
-            }
-        }
-        return Color(channel1: hue, channel2: sat, channel3: bri)
+        return Color(channel1: hue, channel2: sat * 100 / 255, channel3: bri * 100 / 255)
     }
     
     func hsb2rgb(_ hsbColor: Color) -> Color {
@@ -285,49 +265,29 @@ class ColorTransitionService {
         }
         return Color(channel1: varR * 255, channel2: varG * 255, channel3: varB * 255)
     }
+    
     func rgb2hsi(_ rgbColor: Color) -> Color {
         let r = rgbColor.channel1
         let g = rgbColor.channel2
         let b = rgbColor.channel3
-
-        var h: Float = 0
-        var s: Float = 0
-        var i: Float = 0
-
-        var resultH = 0
-        var resultS: Float = 0
-        var resultI = 0
-
-        i = (r + g + b) / 3
         
-        if (r + g + b) == 765 {
-            s = 0
-            h = 0
+        let varR = r / ((r + 0.000001) + (g + 0.000001) + (b + 0.000001))
+        let varG = g / ((r + 0.000001) + (g + 0.000001) + (b + 0.000001))
+        let varB = b / ((r + 0.000001) + (g + 0.000001) + (b + 0.000001))
+        
+        let num = 0.5 * ((varR - varG) + (varR - varB))
+        let den = sqrt((varR - varG) * 2 + (varR - varB) * (varG - varB))
+        var h = acos(num / (den + 000000.1))
+        
+        if (varB <= varG) {
+            h = 2 * .pi - h
         }
         
-        let minimum = min(r, min(g, b))
+        let H = round(h * 100 / .pi)
+        let S = round(100 * (1 - 3 * min(varR, varG, varB) + 0.000001))
+        let I = round((r + g + b) / 3)
         
-        if i > 0 {
-            s = 1 - minimum / i
-        } else if i == 0 {
-            s = 0
-        }
-        
-        let temp = (r - (g / 2) - (b / 2)) / (sqrt((r * r) + (g * g) + (b * b) - (r * g) - (r * b) - (g * b)))
-        
-        if g >= b {
-            h = acos(temp)
-            resultH = Int(h)
-        } else if b > g {
-            h = 360 - acos(temp)
-            resultH = Int(h)
-        }
-        
-        resultH = Int(h)
-        resultS = s
-        resultI = Int(i)
-        
-        return Color(channel1: Float(resultH), channel2: resultS, channel3: Float(resultI))
+        return Color(channel1: H, channel2: S, channel3: I)
     }
     
     func hsi2rgb(_ hsiColor: Color) -> Color {
@@ -367,6 +327,7 @@ class ColorTransitionService {
         
         return Color(channel1: r, channel2: g, channel3: b)
     }
+    
     func rgb2xyz(_ rgbColor: Color) -> Color {
         let r = rgbColor.channel1
         let g = rgbColor.channel2

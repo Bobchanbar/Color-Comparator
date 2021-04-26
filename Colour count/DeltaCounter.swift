@@ -9,7 +9,7 @@ import Foundation
 
 class DeltaCounter {
     
-    func deltaE74 (color1: Color, color2: Color) -> Float {
+    func deltaE76 (color1: Color, color2: Color) -> Float {
         let delta = sqrt(pow(color1.channel1 - color2.channel1, 2) +
                             pow(color1.channel2 - color2.channel2, 2) +
                             pow(color1.channel3 - color2.channel3, 2))
