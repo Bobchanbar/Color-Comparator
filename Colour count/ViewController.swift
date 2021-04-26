@@ -65,6 +65,7 @@ class ViewController: UIViewController {
     func setupColorView() {
         colorView.layer.masksToBounds = true
         colorView.layer.cornerRadius = 12
+        
     }
     
     var originalLABColor: Color?
@@ -226,6 +227,14 @@ class ViewController: UIViewController {
 extension ViewController: UITextFieldDelegate {
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         return textField.resignFirstResponder()
+    }
+    
+    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
+        if textField === lTextField || textField === aTextField || textField === bTextField {
+            return true
+        }
+        
+        return false
     }
 }
 
